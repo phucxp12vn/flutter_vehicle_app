@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../dashboard/dashboar_screen.dart';
+import '../dashboard/dashboard_screen.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import '../../store/state/auth_state.dart';
+import '../../store/models/auth_model.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -10,6 +13,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -65,27 +70,42 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildLoginForm() {
-    return Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            _buildRichText(),
-            const SizedBox(height: 32),
-            _buildTextFormField(
-              icon: Icons.person_outlined,
-              name: "username",
-            ),
-            const SizedBox(height: 16),
-            _buildTextFormField(
-              icon: Icons.lock_outlined,
-              obscureText: true,
-              suffixIcon: Icons.visibility_off,
-              name: "password",
-            ),
-            const SizedBox(height: 16),
-            _buildCheckboxAndButton(),
-          ],
-        ));
+    return StoreConnector<LoginFormState, LoginViewModel>(
+      converter: (store) => LoginViewModel.fromStore(store),
+      builder: (context, vm) {
+        if (vm.isSuccess) {
+          Future.microtask(() => Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                  builder: (context) => const DashboardScreen())));
+        }
+
+        return Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                _buildRichText(),
+                const SizedBox(height: 32),
+                _buildTextFormField(
+                  icon: Icons.person_outlined,
+                  name: "username",
+                  controller: usernameController,
+                  onChanged: (value) => vm.onUsernameChanged(value),
+                ),
+                const SizedBox(height: 16),
+                _buildTextFormField(
+                  icon: Icons.lock_outlined,
+                  obscureText: true,
+                  suffixIcon: Icons.visibility_off,
+                  name: "password",
+                  controller: passwordController,
+                  onChanged: (value) => vm.onPasswordChanged(value),
+                ),
+                const SizedBox(height: 16),
+                _buildCheckboxAndButton(onPressed: vm.onLogin),
+              ],
+            ));
+      },
+    );
   }
 
   Widget _buildRichText() {
@@ -113,13 +133,15 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildTextFormField({
-    required IconData icon,
-    bool obscureText = false,
-    IconData? suffixIcon,
-    required String name,
-  }) {
+  Widget _buildTextFormField(
+      {required IconData icon,
+      bool obscureText = false,
+      IconData? suffixIcon,
+      required String name,
+      TextEditingController? controller,
+      void Function(String)? onChanged}) {
     return TextFormField(
+      controller: controller,
       obscureText: obscureText,
       // The validator receives the text that the user has entered.
       validator: (value) {
@@ -128,6 +150,7 @@ class _LoginPageState extends State<LoginPage> {
         }
         return null;
       },
+      onChanged: onChanged,
       decoration: InputDecoration(
         border: const OutlineInputBorder(),
         prefixIcon: Icon(icon),
@@ -136,7 +159,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildCheckboxAndButton() {
+  Widget _buildCheckboxAndButton({required Function onPressed}) {
     return Row(
       children: [
         Row(
@@ -154,15 +177,7 @@ class _LoginPageState extends State<LoginPage> {
           onPressed: () {
             // Validate returns true if the form is valid, or false otherwise.
             if (_formKey.currentState!.validate()) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const DashboardScreen()),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Please fill input')),
-              );
+              onPressed();
             }
           },
           style: ElevatedButton.styleFrom(
