@@ -1,6 +1,7 @@
 import 'package:redux/redux.dart';
-import '../state/auth_state.dart';
-import '../actions/auth.dart';
+import '../store/state/auth_state.dart';
+import '../store/actions/auth.dart';
+import '../db/db_helper.dart';
 
 class LoginViewModel {
   final Function(String) onUsernameChanged;
@@ -29,8 +30,18 @@ class LoginViewModel {
         store.dispatch(LoginLoadingAction());
         try {
           // Simulate login API call
-          await login(store.state.username, store.state.password);
-          store.dispatch(LoginSuccessAction());
+          bool success =
+              await login(store.state.username, store.state.password);
+
+          if (success) {
+            // Save login state to SQLite
+            DatabaseHelper dbHelper = DatabaseHelper();
+            await dbHelper.insertLoginState(true);
+
+            store.dispatch(LoginSuccessAction());
+          } else {
+            store.dispatch(LoginFailureAction());
+          }
         } catch (error) {
           store.dispatch(LoginFailureAction());
         }
@@ -43,10 +54,10 @@ class LoginViewModel {
 }
 
 // Simulate login API call
-Future<void> login(String username, String password) async {
+Future<bool> login(String username, String password) async {
   await Future.delayed(const Duration(seconds: 1)); // Mock delay
   if (username != '' && password != '') {
-    return;
+    return true;
   } else {
     throw Exception('Login failed');
   }

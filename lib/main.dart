@@ -3,7 +3,9 @@ import 'package:redux/redux.dart';
 import 'store/state/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'screens/login/login_screen.dart';
+import 'screens/dashboard/dashboard_screen.dart';
 import 'store/reducers/auth_reducer.dart';
+import 'db/db_helper.dart';
 
 void main() {
   final store = Store<LoginFormState>(
@@ -73,7 +75,21 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.orange)
                 .copyWith(secondary: Colors.deepOrange),
           ),
-          home: const LoginPage(),
+          home: FutureBuilder(
+            future: DatabaseHelper().isUserLoggedIn(),
+            builder: (context, AsyncSnapshot<bool> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator(); // Show splash screen or loader
+              } else {
+                // Navigate based on the login state
+                if (snapshot.data == true) {
+                  return const DashboardScreen(); // Already logged in, go to dashboard
+                } else {
+                  return const LoginScreen(); // Not logged in, go to login screen
+                }
+              }
+            },
+          ),
         ));
   }
 }

@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import '../dashboard/dashboard_screen.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import '../../store/state/auth_state.dart';
-import '../../store/models/auth_model.dart';
+import '../../models/auth_model.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<LoginScreen> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
