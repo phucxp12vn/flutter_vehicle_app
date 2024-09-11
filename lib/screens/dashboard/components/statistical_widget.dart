@@ -1,31 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:redux/redux.dart';
+import '../../../store/state/app_state.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import '../../../store/actions/count.dart';
 
-class StatisticalWidget extends StatefulWidget {
+class StatisticalWidget extends StatelessWidget {
   const StatisticalWidget({super.key});
 
   @override
-  State<StatisticalWidget> createState() => _StatisticalState();
-}
-
-class _StatisticalState extends State<StatisticalWidget> {
-  final List<double> clickData = [
-    10,
-    15,
-    8,
-    12,
-    6
-  ]; // Example data for each category
-  final List<String> categories = [
-    'Vehicle',
-    'Person',
-    'Photo',
-    'Scan',
-    'Signature'
-  ];
-
-  @override
   Widget build(BuildContext context) {
+    return StoreConnector<AppState, List<double>>(
+      converter: _clickDataConverter,
+      builder: (context, clickData) => _buildChart(context, clickData),
+    );
+  }
+
+  List<double> _clickDataConverter(Store<AppState> store) {
+    return store.state.countState.counts.values
+        .map((e) => e.toDouble())
+        .toList();
+  }
+
+  Widget _buildChart(BuildContext context, List<double> clickData) {
+    final List<String> categories = _getCategoryNames();
+
     return Card(
       elevation: 4,
       child: Padding(
@@ -43,62 +42,12 @@ class _StatisticalState extends State<StatisticalWidget> {
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
-                  maxY: clickData.reduce((a, b) => a > b ? a : b) * 1.2,
-                  barTouchData: BarTouchData(
-                    touchTooltipData: BarTouchTooltipData(
-                      tooltipBgColor: Colors.blueAccent,
-                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        return BarTooltipItem(
-                          '${categories[group.x]}\n${rod.toY.round()}',
-                          const TextStyle(color: Colors.white),
-                        );
-                      },
-                    ),
-                  ),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) => Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            categories[value.toInt()],
-                            style: const TextStyle(fontSize: 10),
-                          ),
-                        ),
-                        reservedSize: 42,
-                      ),
-                    ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 30,
-                        getTitlesWidget: (value, meta) => Text(
-                          value.toInt().toString(),
-                          style: const TextStyle(fontSize: 10),
-                        ),
-                      ),
-                    ),
-                    topTitles: const AxisTitles(
-                        sideTitles: const SideTitles(showTitles: false)),
-                    rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                  ),
+                  maxY: _getMaxY(clickData),
+                  barTouchData: _buildBarTouchData(categories),
+                  titlesData: _buildTitlesData(categories),
                   gridData: const FlGridData(show: false),
                   borderData: FlBorderData(show: false),
-                  barGroups: clickData.asMap().entries.map((entry) {
-                    return BarChartGroupData(
-                      x: entry.key,
-                      barRods: [
-                        BarChartRodData(
-                          toY: entry.value,
-                          color: Colors.blue,
-                          width: 16,
-                        ),
-                      ],
-                    );
-                  }).toList(),
+                  barGroups: _buildBarGroups(clickData),
                 ),
               ),
             ),
@@ -106,5 +55,82 @@ class _StatisticalState extends State<StatisticalWidget> {
         ),
       ),
     );
+  }
+
+  List<String> _getCategoryNames() {
+    return CountCategory.values
+        .map((e) => e.toString().split('.').last.capitalize())
+        .toList();
+  }
+
+  double _getMaxY(List<double> clickData) {
+    return clickData.reduce((a, b) => a > b ? a : b) * 1.2;
+  }
+
+  BarTouchData _buildBarTouchData(List<String> categories) {
+    return BarTouchData(
+      touchTooltipData: BarTouchTooltipData(
+        tooltipBgColor: Colors.blueAccent,
+        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+          return BarTooltipItem(
+            '${categories[group.x]}\n${rod.toY.round()}',
+            const TextStyle(color: Colors.white),
+          );
+        },
+      ),
+    );
+  }
+
+  FlTitlesData _buildTitlesData(List<String> categories) {
+    return FlTitlesData(
+      show: true,
+      bottomTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          getTitlesWidget: (value, meta) => Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              categories[value.toInt()],
+              style: const TextStyle(fontSize: 10),
+            ),
+          ),
+          reservedSize: 42,
+        ),
+      ),
+      leftTitles: AxisTitles(
+        drawBelowEverything: true,
+        sideTitles: SideTitles(
+          showTitles: true,
+          reservedSize: 30,
+          getTitlesWidget: (value, meta) => Text(
+            value.toInt().toString(),
+            style: const TextStyle(fontSize: 10),
+          ),
+        ),
+      ),
+      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+    );
+  }
+
+  List<BarChartGroupData> _buildBarGroups(List<double> clickData) {
+    return clickData.asMap().entries.map((entry) {
+      return BarChartGroupData(
+        x: entry.key,
+        barRods: [
+          BarChartRodData(
+            toY: entry.value,
+            color: Colors.blue,
+            width: 16,
+          ),
+        ],
+      );
+    }).toList();
+  }
+}
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }

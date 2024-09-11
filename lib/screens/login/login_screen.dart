@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_complete_guide/store/state/auth_state.dart';
+import 'package:redux/src/store.dart';
 import '../dashboard/dashboard_screen.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import '../../store/state/auth_state.dart';
 import '../../models/auth_model.dart';
+import '../../store/state/app_state.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -70,7 +72,7 @@ class _LoginPageState extends State<LoginScreen> {
   }
 
   Widget _buildLoginForm() {
-    return StoreConnector<LoginFormState, LoginViewModel>(
+    return StoreConnector<AppState, LoginViewModel>(
       converter: (store) => LoginViewModel.fromStore(store),
       builder: (context, vm) {
         if (vm.isSuccess) {

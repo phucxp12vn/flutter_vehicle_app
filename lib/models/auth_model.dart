@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:redux/redux.dart';
-import '../store/state/auth_state.dart';
 import '../store/actions/auth.dart';
+import '../store/state/app_state.dart';
 import '../db/database.dart';
 
 class LoginViewModel {
@@ -21,7 +21,7 @@ class LoginViewModel {
     required this.isFailure,
   });
 
-  static LoginViewModel fromStore(Store<LoginFormState> store) {
+  static LoginViewModel fromStore(Store<AppState> store) {
     return LoginViewModel(
       onUsernameChanged: (username) =>
           store.dispatch(UpdateUsernameAction(username)),
@@ -31,8 +31,8 @@ class LoginViewModel {
         store.dispatch(LoginLoadingAction());
         try {
           // Simulate login API call
-          bool success =
-              await login(store.state.username, store.state.password);
+          bool success = await login(
+              store.state.authState.username, store.state.authState.password);
 
           if (success) {
             // Save login state to SQLite
@@ -48,9 +48,9 @@ class LoginViewModel {
           store.dispatch(LoginFailureAction());
         }
       },
-      isLoading: store.state.isLoading,
-      isSuccess: store.state.isSuccess,
-      isFailure: store.state.isFailure,
+      isLoading: store.state.authState.isLoading,
+      isSuccess: store.state.authState.isSuccess,
+      isFailure: store.state.authState.isFailure,
     );
   }
 }

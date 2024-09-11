@@ -4,6 +4,11 @@ import 'package:flutter_complete_guide/screens/login/login_screen.dart';
 import 'package:flutter_complete_guide/screens/dashboard/components/statistical_widget.dart';
 import 'package:flutter_complete_guide/screens/dashboard/components/library_widget.dart';
 import 'package:flutter_complete_guide/screens/dashboard/components/scan_result.dart';
+import 'package:flutter_complete_guide/store/state/count_state.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:flutter_complete_guide/models/count_model.dart';
+import 'package:flutter_complete_guide/store/actions/count.dart';
+import 'package:flutter_complete_guide/store/state/app_state.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -49,34 +54,40 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: const Color.fromARGB(255, 211, 174, 118),
-      fixedColor: Colors.black,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.directions_car),
-          label: 'Vehicle',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Person',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.photo_camera),
-          label: 'Photo',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.qr_code_scanner),
-          label: 'Scan',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.draw),
-          label: 'Signature',
-        ),
-      ],
-      onTap: (index) {
-        // Handle navigation
+    return StoreConnector<AppState, CountViewModel>(
+      converter: (store) => CountViewModel.fromStore(store),
+      builder: (context, vm) {
+        return BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: const Color.fromARGB(255, 211, 174, 118),
+          fixedColor: Colors.black,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.directions_car),
+              label: 'Vehicle',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Person',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.photo_camera),
+              label: 'Photo',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.qr_code_scanner),
+              label: 'Scan',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.draw),
+              label: 'Signature',
+            ),
+          ],
+          onTap: (index) {
+            final category = CountCategory.values[index];
+            vm.onIncrementCount(category);
+          },
+        );
       },
     );
   }
