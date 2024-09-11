@@ -1,7 +1,8 @@
+import 'package:drift/drift.dart';
 import 'package:redux/redux.dart';
 import '../store/state/auth_state.dart';
 import '../store/actions/auth.dart';
-import '../db/db_helper.dart';
+import '../db/database.dart';
 
 class LoginViewModel {
   final Function(String) onUsernameChanged;
@@ -35,8 +36,9 @@ class LoginViewModel {
 
           if (success) {
             // Save login state to SQLite
-            DatabaseHelper dbHelper = DatabaseHelper();
-            await dbHelper.insertLoginState(true);
+            final database = AppDatabase.instance;
+            await database.insertLoginState(
+                const LoginStatesCompanion(isLoggedIn: Value(true)));
 
             store.dispatch(LoginSuccessAction());
           } else {

@@ -33,8 +33,11 @@ dependencies:
   
   flutter_redux: ^0.8.2
   redux: ^5.0.0
-  sqflite: ^2.0.0+4
   path: ^1.8.0
+  drift: ^2.0.0
+  drift_dev: ^2.0.0
+  build_runner: ^2.0.0
+  drift_flutter: ^0.1.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

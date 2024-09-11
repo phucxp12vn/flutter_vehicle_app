@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'screens/login/login_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'store/reducers/auth_reducer.dart';
-import 'db/db_helper.dart';
+import 'db/database.dart';
 
 void main() {
   final store = Store<LoginFormState>(
@@ -76,7 +76,7 @@ class MyApp extends StatelessWidget {
                 .copyWith(secondary: Colors.deepOrange),
           ),
           home: FutureBuilder(
-            future: DatabaseHelper().isUserLoggedIn(),
+            future: AppDatabase.instance.checkLoginState(),
             builder: (context, AsyncSnapshot<bool> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator(); // Show splash screen or loader
