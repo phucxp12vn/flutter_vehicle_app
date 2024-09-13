@@ -4,11 +4,11 @@ import 'package:flutter_complete_guide/screens/login/login_screen.dart';
 import 'package:flutter_complete_guide/screens/dashboard/components/statistical_widget.dart';
 import 'package:flutter_complete_guide/screens/dashboard/components/library_widget.dart';
 import 'package:flutter_complete_guide/screens/dashboard/components/scan_result.dart';
-import 'package:flutter_complete_guide/store/state/count_state.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:flutter_complete_guide/models/count_model.dart';
 import 'package:flutter_complete_guide/store/actions/count.dart';
 import 'package:flutter_complete_guide/store/state/app_state.dart';
+import 'package:flutter_complete_guide/screens/camera/camera_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -18,7 +18,7 @@ class DashboardScreen extends StatelessWidget {
     return Scaffold(
       appBar: _buildAppBar(context),
       body: _buildBody(),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
 
@@ -53,7 +53,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomNavigationBar() {
+  Widget _buildBottomNavigationBar(BuildContext context) {
     return StoreConnector<AppState, CountViewModel>(
       converter: (store) => CountViewModel.fromStore(store),
       builder: (context, vm) {
@@ -86,6 +86,12 @@ class DashboardScreen extends StatelessWidget {
           onTap: (index) {
             final category = CountCategory.values[index];
             vm.onIncrementCount(category);
+            if (index == 2) {
+              // Index 2 corresponds to the 'Photo' button
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const CameraScreen()),
+              );
+            }
           },
         );
       },
