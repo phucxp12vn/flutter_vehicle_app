@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:flutter_complete_guide/store/state/app_state.dart';
+
+import '../../models/library_model.dart';
+import '../dashboard/dashboard_screen.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -135,15 +140,28 @@ class _CameraScreenState extends State<CameraScreen> {
                       },
                     ),
                     const SizedBox(width: 16),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(40 * 0.4, 40),
-                      ),
-                      onPressed: () {
-                        // TODO: Implement save functionality
-                        print('Saving image: ${_capturedImage!.path}');
+                    StoreConnector<AppState, LibraryViewModel>(
+                      converter: (store) => LibraryViewModel.fromStore(store),
+                      builder: (context, vm) {
+                        return ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(40 * 0.4, 40),
+                          ),
+                          onPressed: () {
+                            vm.onAddCapturedImage(_capturedImage!.path);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Image saved to library')),
+                            );
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const DashboardScreen()),
+                            );
+                          },
+                          child: const Text('Save'),
+                        );
                       },
-                      child: const Text('Save'),
                     ),
                     const SizedBox(width: 60),
                   ],
