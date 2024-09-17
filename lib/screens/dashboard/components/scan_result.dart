@@ -43,7 +43,21 @@ class ScanResultWidget extends StatelessWidget {
                       : ListView.builder(
                           itemCount: vm.qrScanResults.length,
                           itemBuilder: (context, index) {
-                            return Text(vm.qrScanResults[index].data);
+                            final result = vm.qrScanResults[index];
+                            return ListTile(
+                              leading: Icon(Icons.qr_code,
+                                  color: Theme.of(context).primaryColor),
+                              title: Text(
+                                result.data,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                'Scanned on ${result.scanDate.toString().split(' ')[0]}',
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey[600]),
+                              ),
+                            );
                           },
                         ),
                 ),

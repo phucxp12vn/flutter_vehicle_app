@@ -9,6 +9,7 @@ import 'package:flutter_complete_guide/models/count_model.dart';
 import 'package:flutter_complete_guide/store/actions/count.dart';
 import 'package:flutter_complete_guide/store/state/app_state.dart';
 import 'package:flutter_complete_guide/screens/camera/camera_screen.dart';
+import 'package:flutter_complete_guide/screens/camera/scan_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -90,6 +91,12 @@ class DashboardScreen extends StatelessWidget {
               // Index 2 corresponds to the 'Photo' button
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const CameraScreen()),
+              );
+            }
+            if (index == 3) {
+              // Index 3 corresponds to the 'Scan' button
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const ScanScreen()),
               );
             }
           },
