@@ -45,7 +45,7 @@ dependencies:
   camera: ^0.11.0+2
   path_provider: ^2.1.4
   mobile_scanner: ^5.2.3
-
+  signature: ^5.5.0
 
 dev_dependencies:
   flutter_test:
