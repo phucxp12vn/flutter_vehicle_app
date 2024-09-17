@@ -13,10 +13,10 @@ class AppState {
     required this.libraryState,
   });
 
-  factory AppState.initial() {
+  static Future<AppState> initial() async {
     return AppState(
       authState: LoginFormState.initial(),
-      countState: CountState.initial(),
+      countState: await CountState.initial(),
       libraryState: LibraryState.initial(),
     );
   }

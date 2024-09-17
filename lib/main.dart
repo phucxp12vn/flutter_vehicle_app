@@ -7,10 +7,12 @@ import 'store/reducers/app_reducer.dart';
 import 'store/state/app_state.dart';
 import 'db/database.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final initialState = await AppState.initial();
   final store = Store<AppState>(
     appReducer,
-    initialState: AppState.initial(),
+    initialState: initialState,
   );
 
   runApp(MyApp(store: store));
