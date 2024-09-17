@@ -19,6 +19,7 @@ class _ScanScreenState extends State<ScanScreen> {
   void initState() {
     super.initState();
     _controller = MobileScannerController();
+    _controller?.stop();
   }
 
   @override

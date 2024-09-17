@@ -17,7 +17,7 @@ class AppState {
     return AppState(
       authState: LoginFormState.initial(),
       countState: await CountState.initial(),
-      libraryState: LibraryState.initial(),
+      libraryState: await LibraryState.initial(),
     );
   }
 }

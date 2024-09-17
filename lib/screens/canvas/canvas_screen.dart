@@ -76,18 +76,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   Future<void> _saveSignature(
-      BuildContext context, void Function(String) onAddCapturedImage) async {
+      BuildContext context, void Function(Uint8List) onAddCapturedImage) async {
     if (_controller.isNotEmpty) {
       final Uint8List? data = await _controller.toPngBytes();
 
       if (data != null) {
-        final String fileName =
-            'signature_${DateTime.now().toIso8601String()}.png';
-        final tempDir = await getTemporaryDirectory();
-        final file = File('${tempDir.path}/$fileName');
-        await file.writeAsBytes(data);
-
-        onAddCapturedImage(file.path);
+        onAddCapturedImage(data);
         if (mounted) {
           ScaffoldMessenger.of(this.context).showSnackBar(
             const SnackBar(content: Text('Signature saved')),

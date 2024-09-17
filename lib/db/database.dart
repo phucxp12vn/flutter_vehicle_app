@@ -12,13 +12,26 @@ class CountStates extends Table {
   IntColumn get clickCount => integer()();
 }
 
-@DriftDatabase(tables: [LoginStates, CountStates])
+class CapturedImages extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  BlobColumn get imageData => blob()();
+  DateTimeColumn get captureDate => dateTime()();
+}
+
+class QRScanResults extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get data => text()();
+  DateTimeColumn get scanDate => dateTime()();
+}
+
+@DriftDatabase(
+    tables: [LoginStates, CountStates, CapturedImages, QRScanResults])
 class AppDatabase extends _$AppDatabase {
   AppDatabase._() : super(_openConnection());
   static final AppDatabase instance = AppDatabase._();
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 4;
 
   // LoginStates related functions
   Future<int> insertLoginState(LoginStatesCompanion loginState) =>
@@ -64,6 +77,31 @@ class AppDatabase extends _$AppDatabase {
       clickCount: 1,
     ));
   }
+
+  // CapturedImages related functions
+  Future<int> insertCapturedImage(CapturedImagesCompanion image) =>
+      into(capturedImages).insert(image);
+
+  Future<List<CapturedImage>> getAllCapturedImages() =>
+      select(capturedImages).get();
+
+  Future<int> deleteCapturedImage(Uint8List imageData) =>
+      (delete(capturedImages)..where((tbl) => tbl.imageData.equals(imageData)))
+          .go();
+
+  Future<int> clearAllCapturedImages() => delete(capturedImages).go();
+
+  // QRScanResults related functions
+  Future<int> insertQRScanResult(QRScanResultsCompanion result) =>
+      into(qRScanResults).insert(result);
+
+  Future<List<QRScanResult>> getAllQRScanResults() =>
+      select(qRScanResults).get();
+
+  Future<int> deleteQRScanResult(String data) =>
+      (delete(qRScanResults)..where((tbl) => tbl.data.equals(data))).go();
+
+  Future<int> clearAllQRScanResults() => delete(qRScanResults).go();
 }
 
 LazyDatabase _openConnection() {

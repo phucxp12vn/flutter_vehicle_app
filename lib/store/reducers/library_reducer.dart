@@ -10,12 +10,6 @@ LibraryState libraryReducer(LibraryState state, dynamic action) {
     return state.copyWith(
       qrScanResults: [...state.qrScanResults, action.qrScanResult],
     );
-  } else if (action is RemoveCapturedImageAction) {
-    return state.copyWith(
-      capturedImages: state.capturedImages
-          .where((image) => image.path != action.imagePath)
-          .toList(),
-    );
   } else if (action is RemoveQRScanResultAction) {
     return state.copyWith(
       qrScanResults: state.qrScanResults

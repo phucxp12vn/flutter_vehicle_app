@@ -1,4 +1,4 @@
-import 'package:flutter_complete_guide/models/library_model.dart';
+import '../../db/database.dart';
 
 class LibraryState {
   final List<CapturedImage> capturedImages;
@@ -10,7 +10,18 @@ class LibraryState {
   })  : capturedImages = capturedImages ?? [],
         qrScanResults = qrScanResults ?? [];
 
-  factory LibraryState.initial() => LibraryState();
+  static Future<LibraryState> initial() async {
+    final database = AppDatabase.instance;
+    List<CapturedImage> initialCapturedImages =
+        await database.getAllCapturedImages();
+    List<QRScanResult> initialQRScanResults =
+        await database.getAllQRScanResults();
+
+    return LibraryState(
+      capturedImages: initialCapturedImages,
+      qrScanResults: initialQRScanResults,
+    );
+  }
 
   LibraryState copyWith({
     List<CapturedImage>? capturedImages,

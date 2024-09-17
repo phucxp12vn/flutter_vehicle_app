@@ -40,8 +40,8 @@ class LibraryWidget extends StatelessWidget {
                                     border: Border.all(color: Colors.grey),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Image.file(
-                                    File(vm.capturedImages[index].path),
+                                  child: Image.memory(
+                                    vm.capturedImages[index].imageData,
                                     fit: BoxFit.cover,
                                   ),
                                 ));

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:io';
@@ -147,8 +149,11 @@ class _CameraScreenState extends State<CameraScreen> {
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(40 * 0.4, 40),
                           ),
-                          onPressed: () {
-                            vm.onAddCapturedImage(_capturedImage!.path);
+                          onPressed: () async {
+                            final File imageFile = File(_capturedImage!.path);
+                            final Uint8List imageBytes =
+                                await imageFile.readAsBytes();
+                            vm.onAddCapturedImage(imageBytes);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                   content: Text('Image saved to library')),

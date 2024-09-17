@@ -1,4 +1,4 @@
-import 'package:flutter_complete_guide/models/library_model.dart';
+import 'package:flutter_complete_guide/db/database.dart';
 
 // Action to add a captured image to the library
 class AddCapturedImageAction {
