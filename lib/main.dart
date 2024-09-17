@@ -6,14 +6,74 @@ import 'screens/dashboard/dashboard_screen.dart';
 import 'store/reducers/app_reducer.dart';
 import 'store/state/app_state.dart';
 import 'db/database.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:rxdart/rxdart.dart';
+
+final _messageStreamController = BehaviorSubject<RemoteMessage>();
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+
+  if (kDebugMode) {
+    print("Handling a background message: ${message.messageId}");
+    print('Message data: ${message.data}');
+    print('Message notification: ${message.notification?.title}');
+    print('Message notification: ${message.notification?.body}');
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   final initialState = await AppState.initial();
   final store = Store<AppState>(
     appReducer,
     initialState: initialState,
   );
+
+  final messaging = FirebaseMessaging.instance;
+
+  // Web/iOS app users need to grant permission to receive messages
+  final settings = await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+
+  if (kDebugMode) {
+    print('Permission granted: ${settings.authorizationStatus}');
+  }
+
+  String? token;
+  token = await messaging.getToken();
+
+  if (kDebugMode) {
+    print('Registration Token=$token');
+  }
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    if (kDebugMode) {
+      print('Handling a foreground message: ${message.messageId}');
+      print('Message data: ${message.data}');
+      print('Message notification: ${message.notification?.title}');
+      print('Message notification: ${message.notification?.body}');
+    }
+
+    _messageStreamController.sink.add(message);
+  });
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   runApp(MyApp(store: store));
 }
@@ -85,7 +145,9 @@ class MyApp extends StatelessWidget {
             } else {
               // Navigate based on the login state
               if (snapshot.data == true) {
-                return const DashboardScreen(); // Already logged in, go to dashboard
+                return const MessageListener(
+                    child:
+                        DashboardScreen()); // Already logged in, go to dashboard
               } else {
                 return const LoginScreen(); // Not logged in, go to login screen
               }
@@ -93,6 +155,32 @@ class MyApp extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+}
+
+class MessageListener extends StatelessWidget {
+  final Widget child;
+
+  const MessageListener({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<RemoteMessage>(
+      stream: _messageStreamController.stream,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(snapshot.data?.notification?.body ??
+                    'New message received'),
+              ),
+            );
+          });
+        }
+        return child;
+      },
     );
   }
 }
