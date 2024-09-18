@@ -7,11 +7,11 @@ import 'store/reducers/app_reducer.dart';
 import 'store/state/app_state.dart';
 import 'db/database.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:http/http.dart' as http;
 
 final _messageStreamController = BehaviorSubject<RemoteMessage>();
 
@@ -50,6 +50,14 @@ Future<void> main() async {
     provisional: false,
     sound: true,
   );
+
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    final token = await messaging.getToken();
+    if (token != null) {
+      // Call API to subscribe for notifications
+      await subscribeToNotifications(token);
+    }
+  }
 
   if (kDebugMode) {
     print('Permission granted: ${settings.authorizationStatus}');
@@ -182,5 +190,16 @@ class MessageListener extends StatelessWidget {
         return child;
       },
     );
+  }
+}
+
+Future<void> subscribeToNotifications(String token) async {
+  final response = await http.post(
+    Uri.parse(
+        'https://flutter-server.netlify.app/.netlify/functions/api/subscribe-notification'),
+    body: {'token': token},
+  );
+  if (response.statusCode != 200) {
+    throw Exception('Failed to subscribe to notifications');
   }
 }
