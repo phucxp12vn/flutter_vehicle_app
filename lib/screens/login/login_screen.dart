@@ -79,6 +79,9 @@ class _LoginPageState extends State<LoginScreen> {
           Future.microtask(() => Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                   builder: (context) => const DashboardScreen())));
+          // Navigator.of(context).pushReplacement(
+          //   MaterialPageRoute(builder: (context) => const DashboardScreen()),
+          // );
         }
 
         return Form(

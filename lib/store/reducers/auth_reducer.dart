@@ -12,6 +12,8 @@ LoginFormState loginFormReducer(LoginFormState state, dynamic action) {
     return state.copyWith(isLoading: false, isSuccess: true, isFailure: false);
   } else if (action is LoginFailureAction) {
     return state.copyWith(isLoading: false, isSuccess: false, isFailure: true);
+  } else if (action is LogoutAction) {
+    return LoginFormState.initial();
   } else {
     return state;
   }

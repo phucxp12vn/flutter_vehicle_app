@@ -5,7 +5,7 @@ import 'screens/login/login_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'store/reducers/app_reducer.dart';
 import 'store/state/app_state.dart';
-import 'db/database.dart';
+import 'db/database_v2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -28,9 +28,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await AppDatabase.instance.init();
 
   final initialState = await AppState.initial();
   final store = Store<AppState>(
@@ -38,50 +36,50 @@ Future<void> main() async {
     initialState: initialState,
   );
 
-  final messaging = FirebaseMessaging.instance;
+  // final messaging = FirebaseMessaging.instance;
 
-  // Web/iOS app users need to grant permission to receive messages
-  final settings = await messaging.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
-    sound: true,
-  );
+  // // Web/iOS app users need to grant permission to receive messages
+  // final settings = await messaging.requestPermission(
+  //   alert: true,
+  //   announcement: false,
+  //   badge: true,
+  //   carPlay: false,
+  //   criticalAlert: false,
+  //   provisional: false,
+  //   sound: true,
+  // );
 
-  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    final token = await messaging.getToken();
-    if (token != null) {
-      // Call API to subscribe for notifications
-      await subscribeToNotifications(token);
-    }
-  }
+  // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+  //   final token = await messaging.getToken();
+  //   if (token != null) {
+  //     // Call API to subscribe for notifications
+  //     await subscribeToNotifications(token);
+  //   }
+  // }
 
-  if (kDebugMode) {
-    print('Permission granted: ${settings.authorizationStatus}');
-  }
+  // if (kDebugMode) {
+  //   print('Permission granted: ${settings.authorizationStatus}');
+  // }
 
-  String? token;
-  token = await messaging.getToken();
+  // String? token;
+  // token = await messaging.getToken();
 
-  if (kDebugMode) {
-    print('Registration Token=$token');
-  }
+  // if (kDebugMode) {
+  //   print('Registration Token=$token');
+  // }
 
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    if (kDebugMode) {
-      print('Handling a foreground message: ${message.messageId}');
-      print('Message data: ${message.data}');
-      print('Message notification: ${message.notification?.title}');
-      print('Message notification: ${message.notification?.body}');
-    }
+  // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  //   if (kDebugMode) {
+  //     print('Handling a foreground message: ${message.messageId}');
+  //     print('Message data: ${message.data}');
+  //     print('Message notification: ${message.notification?.title}');
+  //     print('Message notification: ${message.notification?.body}');
+  //   }
 
-    _messageStreamController.sink.add(message);
-  });
+  //   _messageStreamController.sink.add(message);
+  // });
 
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   runApp(MyApp(store: store));
 }
@@ -150,16 +148,18 @@ class MyApp extends StatelessWidget {
           builder: (context, AsyncSnapshot<bool> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const CircularProgressIndicator(); // Show splash screen or loader
-            } else {
-              // Navigate based on the login state
-              if (snapshot.data == true) {
-                return const MessageListener(
-                    child:
-                        DashboardScreen()); // Already logged in, go to dashboard
-              } else {
-                return const LoginScreen(); // Not logged in, go to login screen
-              }
             }
+
+            print("check login");
+
+            if (snapshot.data == true) {
+              // return const MessageListener(
+              //     child:
+              //         DashboardScreen()); // Already logged in, go to dashboard
+              return const DashboardScreen(); // Already logged in, go to dashboard
+            }
+
+            return const LoginScreen(); // Not logged in, go to login screen
           },
         ),
       ),

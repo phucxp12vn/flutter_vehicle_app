@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_complete_guide/db/database.dart';
+import 'package:flutter_complete_guide/models/auth_model.dart';
 import 'package:flutter_complete_guide/screens/login/login_screen.dart';
 import 'package:flutter_complete_guide/screens/dashboard/components/statistical_widget.dart';
 import 'package:flutter_complete_guide/screens/dashboard/components/library_widget.dart';
@@ -17,6 +17,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("render dashboard");
     return Scaffold(
       appBar: _buildAppBar(context),
       body: _buildBody(),
@@ -28,9 +29,14 @@ class DashboardScreen extends StatelessWidget {
     return AppBar(
       title: const Text('Dashboard'),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.logout),
-          onPressed: () => _handleLogout(context),
+        StoreConnector<AppState, LoginViewModel>(
+          converter: (store) => LoginViewModel.fromStore(store),
+          builder: (context, vm) {
+            return IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () => _handleLogout(context, vm.onLogout),
+            );
+          },
         ),
       ],
     );
@@ -112,8 +118,8 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _handleLogout(BuildContext context) async {
-    await AppDatabase.instance.clearLoginState();
+  Future<void> _handleLogout(BuildContext context, Function onLogout) async {
+    await onLogout();
     if (context.mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const LoginScreen()),

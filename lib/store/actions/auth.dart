@@ -13,3 +13,5 @@ class LoginLoadingAction {}
 class LoginSuccessAction {}
 
 class LoginFailureAction {}
+
+class LogoutAction {}

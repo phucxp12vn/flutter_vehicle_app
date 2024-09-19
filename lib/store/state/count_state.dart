@@ -1,5 +1,5 @@
 import '../actions/count.dart';
-import '../../db/database.dart';
+import '../../db/database_v2.dart';
 
 class CountState {
   final Map<CountCategory, int> counts;
@@ -13,7 +13,8 @@ class CountState {
     Map<CountCategory, int> initialCounts = {};
 
     for (var category in CountCategory.values) {
-      int count = await database.getItemClickCount(category.name);
+      int count =
+          await database.getItemClickCount(category.toString().split('.')[1]);
       initialCounts[category] = count;
     }
 

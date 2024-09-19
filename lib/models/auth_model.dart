@@ -1,13 +1,13 @@
-import 'package:drift/drift.dart';
 import 'package:redux/redux.dart';
 import '../store/actions/auth.dart';
 import '../store/state/app_state.dart';
-import '../db/database.dart';
+import '../db/database_v2.dart';
 
 class LoginViewModel {
   final Function(String) onUsernameChanged;
   final Function(String) onPasswordChanged;
   final Function onLogin;
+  final Function onLogout;
   final bool isLoading;
   final bool isSuccess;
   final bool isFailure;
@@ -16,6 +16,7 @@ class LoginViewModel {
     required this.onUsernameChanged,
     required this.onPasswordChanged,
     required this.onLogin,
+    required this.onLogout,
     required this.isLoading,
     required this.isSuccess,
     required this.isFailure,
@@ -35,10 +36,9 @@ class LoginViewModel {
               store.state.authState.username, store.state.authState.password);
 
           if (success) {
-            // Save login state to SQLite
+            // Save login state to IndexedDB
             final database = AppDatabase.instance;
-            await database.insertLoginState(
-                const LoginStatesCompanion(isLoggedIn: Value(true)));
+            await database.insertLoginState(LoginStates(isLoggedIn: true));
 
             store.dispatch(LoginSuccessAction());
           } else {
@@ -47,6 +47,14 @@ class LoginViewModel {
         } catch (error) {
           store.dispatch(LoginFailureAction());
         }
+      },
+      onLogout: () async {
+        // Clear the auth state in the Redux store
+        store.dispatch(LogoutAction());
+
+        // Clear login state in the database
+        final database = AppDatabase.instance;
+        await database.clearLoginState();
       },
       isLoading: store.state.authState.isLoading,
       isSuccess: store.state.authState.isSuccess,

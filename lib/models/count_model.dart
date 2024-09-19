@@ -1,7 +1,7 @@
 import 'package:redux/redux.dart';
 import '../store/actions/count.dart';
 import '../store/state/app_state.dart';
-import '../db/database.dart';
+import '../db/database_v2.dart';
 
 class CountViewModel {
   final Function onIncrementCount;
@@ -17,7 +17,7 @@ class CountViewModel {
 
         // Save data to database
         final database = AppDatabase.instance;
-        await database.incrementItemClick(category.name);
+        await database.incrementItemClick(category.toString().split('.')[1]);
       },
     );
   }
