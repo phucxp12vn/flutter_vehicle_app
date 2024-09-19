@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:ui';
+
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +32,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppDatabase.instance.init();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   final initialState = await AppState.initial();
   final store = Store<AppState>(
@@ -36,50 +42,67 @@ Future<void> main() async {
     initialState: initialState,
   );
 
-  // final messaging = FirebaseMessaging.instance;
+  FirebaseMessaging? messaging;
+  try {
+    messaging = FirebaseMessaging.instance;
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error initializing FirebaseMessaging: $e');
+    }
+    // Handle the error gracefully, perhaps by setting messaging to null
+    messaging = null;
+  }
 
-  // // Web/iOS app users need to grant permission to receive messages
-  // final settings = await messaging.requestPermission(
-  //   alert: true,
-  //   announcement: false,
-  //   badge: true,
-  //   carPlay: false,
-  //   criticalAlert: false,
-  //   provisional: false,
-  //   sound: true,
-  // );
+  if (messaging != null) {
+    // Web/iOS app users need to grant permission to receive messages
+    final settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
 
-  // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-  //   final token = await messaging.getToken();
-  //   if (token != null) {
-  //     // Call API to subscribe for notifications
-  //     await subscribeToNotifications(token);
-  //   }
-  // }
+    const vapidKey =
+        "BFib50tUUzr4PLKYYQVyZIhc_44ah-vah-i1EW4eFh2GqQe5DuH-jIaWXRs1b_9xqmcDleuUJj-KxpSp5BENBm0";
 
-  // if (kDebugMode) {
-  //   print('Permission granted: ${settings.authorizationStatus}');
-  // }
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      String? token;
+      if (DefaultFirebaseOptions.currentPlatform ==
+          DefaultFirebaseOptions.web) {
+        // For web platform, we need to wait for the service worker to be ready
+        token = await messaging.getToken(
+          vapidKey: vapidKey,
+        );
+      } else {
+        token = await messaging.getToken();
+      }
 
-  // String? token;
-  // token = await messaging.getToken();
+      if (kDebugMode) {
+        print('Registration Token=$token');
+      }
 
-  // if (kDebugMode) {
-  //   print('Registration Token=$token');
-  // }
+      if (token != null) {
+        // Call API to subscribe for notifications
+        await subscribeToNotifications(token);
+      }
+    }
 
-  // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-  //   if (kDebugMode) {
-  //     print('Handling a foreground message: ${message.messageId}');
-  //     print('Message data: ${message.data}');
-  //     print('Message notification: ${message.notification?.title}');
-  //     print('Message notification: ${message.notification?.body}');
-  //   }
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (kDebugMode) {
+        print('Handling a foreground message: ${message.messageId}');
+        print('Message data: ${message.data}');
+        print('Message notification: ${message.notification?.title}');
+        print('Message notification: ${message.notification?.body}');
+      }
 
-  //   _messageStreamController.sink.add(message);
-  // });
+      _messageStreamController.sink.add(message);
+    });
 
-  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  }
 
   runApp(MyApp(store: store));
 }
@@ -150,13 +173,10 @@ class MyApp extends StatelessWidget {
               return const CircularProgressIndicator(); // Show splash screen or loader
             }
 
-            print("check login");
-
             if (snapshot.data == true) {
-              // return const MessageListener(
-              //     child:
-              //         DashboardScreen()); // Already logged in, go to dashboard
-              return const DashboardScreen(); // Already logged in, go to dashboard
+              return const MessageListener(
+                  child:
+                      DashboardScreen()); // Already logged in, go to dashboard
             }
 
             return const LoginScreen(); // Not logged in, go to login screen
@@ -183,6 +203,12 @@ class MessageListener extends StatelessWidget {
               SnackBar(
                 content: Text(snapshot.data?.notification?.body ??
                     'New message received'),
+                behavior: SnackBarBehavior.floating,
+                margin: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).size.height - 130,
+                  right: 20,
+                  left: 20,
+                ),
               ),
             );
           });
@@ -197,7 +223,8 @@ Future<void> subscribeToNotifications(String token) async {
   final response = await http.post(
     Uri.parse(
         'https://flutter-server.netlify.app/.netlify/functions/api/subscribe-notification'),
-    body: {'token': token},
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'token': token}),
   );
   if (response.statusCode != 200) {
     throw Exception('Failed to subscribe to notifications');

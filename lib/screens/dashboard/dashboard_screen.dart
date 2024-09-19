@@ -17,7 +17,6 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("render dashboard");
     return Scaffold(
       appBar: _buildAppBar(context),
       body: _buildBody(),
