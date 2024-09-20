@@ -6,8 +6,8 @@ class LoginFormState {
   final bool isFailure;
 
   LoginFormState({
-    this.username = '',
-    this.password = '',
+    this.username = 'test',
+    this.password = '123456',
     this.isLoading = false,
     this.isSuccess = false,
     this.isFailure = false,

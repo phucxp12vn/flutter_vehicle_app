@@ -15,8 +15,24 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginPageState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  late final TextEditingController usernameController;
+  late final TextEditingController passwordController;
+
+  @override
+  void initState() {
+    super.initState();
+    final store = StoreProvider.of<AppState>(context, listen: false);
+    final authState = store.state.authState;
+    usernameController = TextEditingController(text: authState.username);
+    passwordController = TextEditingController(text: authState.password);
+  }
+
+  @override
+  void dispose() {
+    usernameController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,9 +95,6 @@ class _LoginPageState extends State<LoginScreen> {
           Future.microtask(() => Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                   builder: (context) => const DashboardScreen())));
-          // Navigator.of(context).pushReplacement(
-          //   MaterialPageRoute(builder: (context) => const DashboardScreen()),
-          // );
         }
 
         return Form(
