@@ -53,9 +53,7 @@ class AppDatabase {
       databaseFactory = databaseFactoryFfiWeb;
     } else {
       // Use ffi on Linux and Windows.
-      if (Platform.isLinux || Platform.isWindows) {
-        databaseFactory = databaseFactoryFfi;
-      }
+      databaseFactory = databaseFactoryFfi;
     }
 
     var factory = getIdbFactorySqflite(databaseFactory);
