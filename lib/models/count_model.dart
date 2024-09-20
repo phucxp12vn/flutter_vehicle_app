@@ -1,7 +1,7 @@
 import 'package:redux/redux.dart';
 import '../store/actions/count.dart';
 import '../store/state/app_state.dart';
-import '../db/database_v2.dart';
+import '../db/database.dart';
 
 class CountViewModel {
   final Function onIncrementCount;

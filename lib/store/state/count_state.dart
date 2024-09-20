@@ -1,5 +1,5 @@
 import '../actions/count.dart';
-import '../../db/database_v2.dart';
+import '../../db/database.dart';
 
 class CountState {
   final Map<CountCategory, int> counts;

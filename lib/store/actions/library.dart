@@ -1,15 +1,15 @@
-import 'package:flutter_complete_guide/db/database_v2.dart';
+import 'package:flutter_complete_guide/db/database.dart';
 
 // Action to add a captured image to the library
 class AddCapturedImageAction {
-  final CapturedImages capturedImage;
+  final CapturedImage capturedImage;
 
   AddCapturedImageAction(this.capturedImage);
 }
 
 // Action to add a QR scan result to the library
 class AddQRScanResultAction {
-  final QRScanResults qrScanResult;
+  final QRScanResult qrScanResult;
 
   AddQRScanResultAction(this.qrScanResult);
 }

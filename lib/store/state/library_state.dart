@@ -1,20 +1,20 @@
-import '../../db/database_v2.dart';
+import '../../db/database.dart';
 
 class LibraryState {
-  final List<CapturedImages> capturedImages;
-  final List<QRScanResults> qrScanResults;
+  final List<CapturedImage> capturedImages;
+  final List<QRScanResult> qrScanResults;
 
   LibraryState({
-    List<CapturedImages>? capturedImages,
-    List<QRScanResults>? qrScanResults,
+    List<CapturedImage>? capturedImages,
+    List<QRScanResult>? qrScanResults,
   })  : capturedImages = capturedImages ?? [],
         qrScanResults = qrScanResults ?? [];
 
   static Future<LibraryState> initial() async {
     final database = AppDatabase.instance;
-    List<CapturedImages> initialCapturedImages =
+    List<CapturedImage> initialCapturedImages =
         await database.getAllCapturedImages();
-    List<QRScanResults> initialQRScanResults =
+    List<QRScanResult> initialQRScanResults =
         await database.getAllQRScanResults();
 
     return LibraryState(
@@ -24,8 +24,8 @@ class LibraryState {
   }
 
   LibraryState copyWith({
-    List<CapturedImages>? capturedImages,
-    List<QRScanResults>? qrScanResults,
+    List<CapturedImage>? capturedImages,
+    List<QRScanResult>? qrScanResults,
   }) {
     return LibraryState(
       capturedImages: capturedImages ?? this.capturedImages,
