@@ -73,9 +73,21 @@ Future<void> main() async {
       if (DefaultFirebaseOptions.currentPlatform ==
           DefaultFirebaseOptions.web) {
         // For web platform, we need to wait for the service worker to be ready
-        token = await messaging.getToken(
-          vapidKey: vapidKey,
-        );
+        try {
+          token = await messaging.getToken(
+            vapidKey: vapidKey,
+          );
+        } catch (err) {
+          const error =
+              "AbortError: Failed to execute 'subscribe' on 'PushManager': Subscription failed - no active Service Worker";
+          if (err.toString() == error) {
+            token = await messaging.getToken(
+              vapidKey: vapidKey,
+            );
+          } else {
+            rethrow;
+          }
+        }
       } else {
         token = await messaging.getToken();
       }
