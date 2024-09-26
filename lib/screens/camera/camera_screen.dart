@@ -5,9 +5,11 @@ import 'package:camera/camera.dart';
 import 'dart:io';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:flutter_complete_guide/store/state/app_state.dart';
+import 'package:http/http.dart' as http;
 
 import '../../models/library_model.dart';
 import '../dashboard/dashboard_screen.dart';
+import 'package:flutter/foundation.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -89,10 +91,13 @@ class _CameraScreenState extends State<CameraScreen> {
                 : Stack(
                     children: [
                       Positioned.fill(
-                        child: Image.file(
-                          File(_capturedImage!.path),
-                          fit: BoxFit.cover,
-                        ),
+                        child: kIsWeb
+                            ? Image.network(_capturedImage!.path,
+                                fit: BoxFit.cover)
+                            : Image.file(
+                                File(_capturedImage!.path),
+                                fit: BoxFit.cover,
+                              ),
                       ),
                       Positioned(
                         bottom: 16,
@@ -150,9 +155,26 @@ class _CameraScreenState extends State<CameraScreen> {
                             minimumSize: const Size(40 * 0.4, 40),
                           ),
                           onPressed: () async {
-                            final File imageFile = File(_capturedImage!.path);
-                            final Uint8List imageBytes =
-                                await imageFile.readAsBytes();
+                            final Uint8List imageBytes;
+                            if (kIsWeb) {
+                              http.Response response = await http.get(
+                                Uri.parse(_capturedImage!.path),
+                              );
+
+                              if (response.statusCode == 200) {
+                                imageBytes = response.bodyBytes;
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('Image can\'t be saved.')),
+                                );
+                                return;
+                              }
+                            } else {
+                              final File imageFile = File(_capturedImage!.path);
+                              imageBytes = await imageFile.readAsBytes();
+                            }
+
                             vm.onAddCapturedImage(imageBytes);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
